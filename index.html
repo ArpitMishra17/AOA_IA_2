@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sum of Subsets Simulation</title>
+    <style>
+        :root {
+            --background: #09090b;
+            --foreground: #f1f5f9;
+            --card: #111113;
+            --card-foreground: #f1f5f9;
+            --border: #1f2937;
+            --input: #242429;
+            --primary: #9333ea;
+            --primary-foreground: #f1f5f9;
+            --secondary: #111113;
+            --secondary-foreground: #a1a1aa;
+            --accent: #18181b;
+            --accent-foreground: #f1f5f9;
+            --destructive: #ef4444;
+            --destructive-foreground: #f1f5f9;
+            --success: #22c55e;
+            --success-foreground: #f1f5f9;
+            --ring: #9333ea;
+            --radius: 0.5rem;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        
+        h1 {
+            color: var(--foreground);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+        
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background-color: var(--input);
+            color: var(--foreground);
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input:focus {
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:not(:disabled) {
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
+        }
+        
+        .btn-danger {
+            background-color: var(--destructive);
+            color: var(--destructive-foreground);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--secondary-foreground);
+        }
+        
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            border-radius: 3px;
+        }
+        
+        .section-title {
+            margin: 1.5rem 0 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+        
+        .tree-container {
+            width: 100%;
+            overflow-x: auto;
+            padding: 1.5rem 0;
+            position: relative;
+        }
+        
+        .tree-svg {
+            width: 100%;
+            min-height: 400px;
+            display: block;
+        }
+        
+        .tree-node {
+            cursor: pointer;
+        }
+        
+        .node-exploring {
+            fill: #2563eb;
+            stroke: #1d4ed8;
+        }
+        
+        .node-solution {
+            fill: #16a34a;
+            stroke: #15803d;
+        }
+        
+        .node-pruned {
+            fill: #dc2626;
+            stroke: #b91c1c;
+        }
+        
+        .node-normal {
+            fill: #4b5563;
+            stroke: #374151;
+        }
+        
+        .node-text {
+            font-size: 12px;
+            font-weight: 500;
+            fill: white;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        .node-connector {
+            stroke: #4b5563;
+            stroke-width: 1.5;
+        }
+        
+        .steps-container {
+            margin-top: 1.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        
+        .steps-content {
+            padding: 1rem;
+        }
+        
+        .step-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            color: var(--secondary-foreground);
+            background-color: var(--accent);
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .current-step {
+            color: var(--foreground);
+            background-color: var(--input);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .results-container {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            background-color: var(--accent);
+            border: 1px solid var(--border);
+        }
+        
+        .results-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+        }
+        
+        .solution-list {
+            list-style-position: inside;
+            margin-left: 1rem;
+        }
+        
+        .solution-item {
+            margin-bottom: 0.5rem;
+            color: var(--secondary-foreground);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--accent);
+            border-radius: var(--radius);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: var(--radius);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        .card {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+        }
+    </style>
+</head>
+<body>
+    <h1>Sum of Subsets Problem Simulation</h1>
+    
+    <div class="container">
+        <div class="input-section">
+            <div class="input-group">
+                <label for="numbers">Enter numbers (comma separated)</label>
+                <input type="text" id="numbers" placeholder="e.g. 3,5,6,7" value="3,5,6,7">
+            </div>
+            
+            <div class="input-group">
+                <label for="target">Target sum</label>
+                <input type="number" id="target" placeholder="e.g. 15" value="15">
+            </div>
+            
+            <div class="input-group">
+                <div class="button-group">
+                    <button id="solve-btn" class="btn-primary">Solve</button>
+                    <button id="next-step" class="btn-secondary" disabled>Next Step</button>
+                    <button id="auto-solve" class="btn-secondary" disabled>Auto Solve</button>
+                    <button id="reset-btn" class="btn-danger" disabled>Reset</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2563eb;"></div>
+                <span>Exploring</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #16a34a;"></div>
+                <span>Solution</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc2626;"></div>
+                <span>Pruned/Rejected</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4b5563;"></div>
+                <span>Normal</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Decision Tree</div>
+            <div id="tree-container" class="tree-container">
+                <svg id="tree-svg" class="tree-svg"></svg>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">Algorithm Steps</div>
+            <div class="steps-container">
+                <div id="step-explanation" class="steps-content"></div>
+            </div>
+        </div>
+        
+        <div id="results" class="results-container">
+            <div class="results-title">Results</div>
+            <p>Start the algorithm to see results</p>
+        </div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const numbersInput = document.getElementById('numbers');
+        const targetInput = document.getElementById('target');
+        const solveBtn = document.getElementById('solve-btn');
+        const nextStepBtn = document.getElementById('next-step');
+        const autoSolveBtn = document.getElementById('auto-solve');
+        const resetBtn = document.getElementById('reset-btn');
+        const treeSvg = document.getElementById('tree-svg');
+        const resultsDiv = document.getElementById('results');
+        const stepExplanation = document.getElementById('step-explanation');
+        
+        // Global variables
+        let numbers = [];
+        let target = 0;
+        let solutions = [];
+        let currentStep = 0;
+        let steps = [];
+        let autoSolveInterval = null;
+        let treeNodes = [];
+        let treeEdges = [];
+        let nodeRadius = 40;
+        let horizontalSpacing = 120;
+        let verticalSpacing = 100;
+        let svgWidth = 1000;
+        let svgHeight = 600;
+        
+        // Initialize
+        function initialize() {
+            // Parse input values
+            numbers = numbersInput.value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            target = parseInt(targetInput.value);
+            
+            // Validate inputs
+            if (numbers.length === 0 || isNaN(target)) {
+                alert('Please enter valid numbers and target sum');
+                return false;
+            }
+            
+            // Sort numbers in ascending order (helps with branch-and-bound)
+            numbers.sort((a, b) => a - b);
+            
+            // Reset global variables
+            solutions = [];
+            steps = [];
+            currentStep = 0;
+            treeNodes = [];
+            treeEdges = [];
+            
+            // Generate steps for the algorithm
+            generateSteps();
+            
+            // Enable buttons
+            nextStepBtn.disabled = false;
+            autoSolveBtn.disabled = false;
+            resetBtn.disabled = false;
+            
+            // Update UI
+            updateUI();
+            
+            return true;
+        }
+        
+        // Generate steps for the algorithm
+        function generateSteps() {
+            const remaining = numbers.reduce((sum, num) => sum + num, 0);
+            let currentSum = 0;
+            let currentSubset = [];
+            
+            // Start with empty subset
+            steps.push({
+                type: 'start',
+                message: `Starting with empty subset, target = ${target}`,
+                subset: [],
+                currentSum: 0,
+                index: 0,
+                solutions: []
+            });
+            
+            // Run the algorithm
+            sumOfSubsets(0, currentSum, currentSubset, remaining);
+        }
+        
+        // Sum of Subsets algorithm
+        function sumOfSubsets(index, currentSum, currentSubset, remaining) {
+            // Base case: if we've gone through all numbers
+            if (index === numbers.length) {
+                if (currentSum === target) {
+                    // Found a solution
+                    solutions.push([...currentSubset]);
+                    steps.push({
+                        type: 'solution',
+                        message: `Found solution: [${currentSubset.join(', ')}] = ${target}`,
+                        subset: [...currentSubset],
+                        currentSum: currentSum,
+                        index: index,
+                        solutions: [...solutions]
+                    });
+                }
+                return;
+            }
+            
+            const current = numbers[index];
+            const newRemaining = remaining - current;
+            
+            // Check if including the current number could lead to valid solutions
+            if (currentSum + current <= target) {
+                // Include current number
+                currentSubset.push(current);
+                steps.push({
+                    type: 'include',
+                    message: `Include ${current}, current sum = ${currentSum + current}, at index ${index}`,
+                    subset: [...currentSubset],
+                    currentSum: currentSum + current,
+                    index: index + 1,
+                    solutions: [...solutions]
+                });
+                
+                sumOfSubsets(index + 1, currentSum + current, currentSubset, newRemaining);
+                
+                // Backtrack
+                currentSubset.pop();
+            } else {
+                // Prune: including this number would exceed the target
+                steps.push({
+                    type: 'prune_exceed',
+                    message: `Pruning: Including ${current} would exceed target (${currentSum + current} > ${target})`,
+                    subset: [...currentSubset],
+                    currentSum: currentSum,
+                    index: index,
+                    solutions: [...solutions],
+                    includedNumber: current
+                });
+            }
+            
+            // Check if excluding the current number could lead to valid solutions
+            if (currentSum + newRemaining >= target) {
+                // Exclude current number
+                steps.push({
+                    type: 'exclude',
+                    message: `Exclude ${current}, stay at sum ${currentSum}, move to index ${index + 1}`,
+                    subset: [...currentSubset],
+                    currentSum: currentSum,
+                    index: index + 1,
+                    solutions: [...solutions]
+                });
+                
+                sumOfSubsets(index + 1, currentSum, currentSubset, newRemaining);
+            } else {
+                // Prune: remaining numbers are not enough to reach target
+                steps.push({
+                    type: 'prune_insufficient',
+                    message: `Pruning: Remaining numbers insufficient (${currentSum} + ${newRemaining} < ${target})`,
+                    subset: [...currentSubset],
+                    currentSum: currentSum,
+                    index: index,
+                    solutions: [...solutions]
+                });
+            }
+        }
+        
+        // Update UI based on current step
+        function updateUI() {
+            if (currentStep >= steps.length) {
+                finishSimulation();
+                return;
+            }
+            
+            const step = steps[currentStep];
+            
+            // Update step explanation
+            const stepItem = document.createElement('div');
+            stepItem.classList.add('step-item');
+            stepItem.classList.add('current-step');
+            stepItem.textContent = `Step ${currentStep + 1}: ${step.message}`;
+            
+            // Remove current-step class from previous steps
+            const previousCurrentSteps = stepExplanation.querySelectorAll('.current-step');
+            previousCurrentSteps.forEach(el => el.classList.remove('current-step'));
+            
+            stepExplanation.appendChild(stepItem);
+            stepItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Build tree data structure
+            buildTreeData();
+            
+            // Update tree SVG
+            updateTreeSVG();
+            
+            // Update results
+            updateResults(step);
+        }
+        
+        // Build tree data structure from steps
+        function buildTreeData() {
+            treeNodes = [];
+            treeEdges = [];
+            
+            // Create map to track unique nodes
+            const nodeMap = new Map();
+            
+            // Process steps to build tree nodes and edges
+            for (let i = 0; i <= currentStep; i++) {
+                const step = steps[i];
+                
+                // Handle different step types
+                if (step.type === 'start' || step.type === 'include' || step.type === 'exclude' || step.type === 'solution') {
+                    const nodeKey = JSON.stringify(step.subset);
+                    const label = step.subset.length > 0 ? step.subset.join(',') : '∅';
+                    const level = step.subset.length;
+                    
+                    // Add node if it doesn't exist
+                    if (!nodeMap.has(nodeKey)) {
+                        const node = {
+                            id: nodeKey,
+                            label: label,
+                            sum: step.currentSum,
+                            level: level,
+                            subset: [...step.subset],
+                            type: step.type === 'solution' ? 'solution' : 'normal',
+                            isExploring: i === currentStep
+                        };
+                        
+                        nodeMap.set(nodeKey, node);
+                        treeNodes.push(node);
+                    } else if (i === currentStep) {
+                        nodeMap.get(nodeKey).isExploring = true;
+                    }
+                    
+                    // For solution steps, mark as solution
+                    if (step.type === 'solution') {
+                        nodeMap.get(nodeKey).type = 'solution';
+                    }
+                    
+                    // Add edge for non-root nodes
+                    if (level > 0) {
+                        const parentSubset = [...step.subset];
+                        if (step.type === 'include') {
+                            parentSubset.pop(); // Remove last element for include operations
+                        }
+                        const parentKey = JSON.stringify(parentSubset);
+                        
+                        // Only add edge if both nodes exist
+                        if (nodeMap.has(parentKey)) {
+                            treeEdges.push({
+                                from: parentKey,
+                                to: nodeKey
+                            });
+                        }
+                    }
+                }
+                
+                // Handle prune steps
+                if (step.type.startsWith('prune')) {
+                    const prunedSubset = [...step.subset];
+                    if (step.type === 'prune_exceed' && step.includedNumber !== undefined) {
+                        prunedSubset.push(step.includedNumber);
+                    }
+                    
+                    const nodeKey = JSON.stringify(prunedSubset);
+                    const label = prunedSubset.length > 0 ? prunedSubset.join(',') : '∅';
+                    const level = prunedSubset.length;
+                    
+                    // Add pruned node
+                    if (!nodeMap.has(nodeKey)) {
+                        const node = {
+                            id: nodeKey,
+                            label: label,
+                            sum: step.type === 'prune_exceed' && step.includedNumber !== undefined
+                                ? step.currentSum + step.includedNumber
+                                : step.currentSum,
+                            level: level,
+                            subset: prunedSubset,
+                            type: 'pruned',
+                            isExploring: i === currentStep
+                        };
+                        
+                        nodeMap.set(nodeKey, node);
+                        treeNodes.push(node);
+                    } else if (i === currentStep) {
+                        const node = nodeMap.get(nodeKey);
+                        node.isExploring = true;
+                        node.type = 'pruned';
+                    }
+                    
+                    // Add edge for pruned node
+                    if (level > 0) {
+                        const parentSubset = [...prunedSubset];
+                        if (step.type === 'prune_exceed' && step.includedNumber !== undefined) {
+                            parentSubset.pop();
+                        }
+                        const parentKey = JSON.stringify(parentSubset);
+                        
+                        // Only add edge if both nodes exist
+                        if (nodeMap.has(parentKey)) {
+                            treeEdges.push({
+                                from: parentKey,
+                                to: nodeKey
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        function calculateTreeLayout() {
+            // Get max level and count nodes per level
+            const levels = [];
+            let maxLevel = 0;
+            
+            treeNodes.forEach(node => {
+                maxLevel = Math.max(maxLevel, node.level);
+                if (!levels[node.level]) {
+                    levels[node.level] = 0;
+                }
+                levels[node.level]++;
+            });
+            
+            // Calculate positions
+            const treeWidth = Math.max(800, (maxLevel + 1) * horizontalSpacing);
+            const treeHeight = Math.max(400, (Math.max(...levels) + 1) * verticalSpacing);
+            
+            // Set SVG dimensions
+            svgWidth = treeWidth;
+            svgHeight = treeHeight;
+            treeSvg.setAttribute('width', svgWidth);
+            treeSvg.setAttribute('height', svgHeight);
+            
+            // Sort nodes by level
+            const levelNodes = Array.from({ length: maxLevel + 1 }, () => []);
+            treeNodes.forEach(node => {
+                levelNodes[node.level].push(node);
+            });
+            
+            // Assign x and y coordinates
+            levelNodes.forEach((nodes, level) => {
+                const levelWidth = nodes.length * horizontalSpacing;
+                const startX = (svgWidth - levelWidth) / 2 + horizontalSpacing / 2;
+                
+                nodes.forEach((node, index) => {
+                    node.x = startX + index * horizontalSpacing;
+                    node.y = level * verticalSpacing + 60;
+                });
+            });
+        }
+        
+        function updateTreeSVG() {
+            // Calculate layout
+            calculateTreeLayout();
+            
+            // Clear existing SVG
+            treeSvg.innerHTML = '';
+            
+            // Add edges first (so they are under the nodes)
+            treeEdges.forEach(edge => {
+                const source = treeNodes.find(node => node.id === edge.from);
+                const target = treeNodes.find(node => node.id === edge.to);
+                
+                if (source && target) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    // Create a smooth curve
+                    const dx = target.x - source.x;
+                    const dy = target.y - source.y;
+                    const curve = `M${source.x},${source.y + nodeRadius / 2} C${source.x},${source.y + dy / 2} ${target.x},${target.y - dy / 2} ${target.x},${target.y - nodeRadius / 2}`;
+                    
+                    line.setAttribute('d', curve);
+                    line.setAttribute('class', 'node-connector');
+                    line.setAttribute('fill', 'none');
+                    
+                    treeSvg.appendChild(line);
+                }
+            });
+            
+            // Add nodes
+            treeNodes.forEach(node => {
+                const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                group.setAttribute('class', 'tree-node');
+                
+                // Create circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', nodeRadius);
+                
+                // Set node style
+                if (node.isExploring) {
+                    circle.setAttribute('class', 'node-exploring');
+                } else if (node.type === 'solution') {
+                    circle.setAttribute('class', 'node-solution');
+                } else if (node.type === 'pruned') {
+                    circle.setAttribute('class', 'node-pruned');
+                } else {
+                    circle.setAttribute('class', 'node-normal');
+                }
+                
+                group.appendChild(circle);
+                
+                // Create text for subset
+                const subsetText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                subsetText.setAttribute('x', node.x);
+                subsetText.setAttribute('y', node.y - 5);
+                subsetText.setAttribute('class', 'node-text');
+                subsetText.textContent = node.label;
+                
+                group.appendChild(subsetText);
+                
+                // Create text for sum
+                const sumText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                sumText.setAttribute('x', node.x);
+                sumText.setAttribute('y', node.y + 15);
+                sumText.setAttribute('class', 'node-text');
+                sumText.textContent = `Sum: ${node.sum}`;
+                
+                group.appendChild(sumText);
+                
+                treeSvg.appendChild(group);
+            });
+        }
+        
+        // Update results
+        function updateResults(step) {
+            if (step.solutions.length > 0) {
+                let html = '<div class="results-title">Solutions Found:</div>';
+                html += '<ul class="solution-list">';
+                
+                step.solutions.forEach(solution => {
+                    html += `<li class="solution-item">[${solution.join(', ')}] = ${target}</li>`;
+                });
+                
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = '<div class="results-title">Results</div><p>No solutions found yet...</p>';
+            }
+        }
+        
+        // Finish simulation
+        function finishSimulation() {
+            if (solutions.length > 0) {
+                let html = '<div class="results-title">Final Solutions:</div>';
+                html += '<ul class="solution-list">';
+                
+                solutions.forEach(solution => {
+                    html += `<li class="solution-item">[${solution.join(', ')}] = ${target}</li>`;
+                });
+                
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } else {
+                resultsDiv.innerHTML = '<div class="results-title">Results</div><p>No solutions found for the given input.</p>';
+            }
+            
+            // Disable step buttons
+            nextStepBtn.disabled = true;
+            autoSolveBtn.disabled = true;
+            if (autoSolveInterval) {
+                clearInterval(autoSolveInterval);
+                autoSolveBtn.textContent = 'Auto Solve';
+            }
+        }
+        
+        // Move to the next step
+        function nextStep() {
+            if (currentStep < steps.length) {
+                currentStep++;
+                updateUI();
+            }
+        }
+        
+        // Auto solve with interval
+        function toggleAutoSolve() {
+            if (autoSolveInterval) {
+                clearInterval(autoSolveInterval);
+                autoSolveInterval = null;
+                autoSolveBtn.textContent = 'Auto Solve';
+            } else {
+                autoSolveBtn.textContent = 'Stop Auto';
+                autoSolveInterval = setInterval(() => {
+                    if (currentStep < steps.length) {
+                        nextStep();
+                    } else {
+                        clearInterval(autoSolveInterval);
+                        autoSolveInterval = null;
+                        autoSolveBtn.textContent = 'Auto Solve';
+                    }
+                }, 500);
+            }
+        }
+        
+        // Reset simulation
+        function resetSimulation() {
+            // Clear SVG
+            treeSvg.innerHTML = '';
+            
+            // Clear results
+            resultsDiv.innerHTML = '<div class="results-title">Results</div><p>Start the algorithm to see results</p>';
+            
+            // Clear steps
+            stepExplanation.innerHTML = '';
+            
+            // Clear interval if running
+            if (autoSolveInterval) {
+                clearInterval(autoSolveInterval);
+                autoSolveInterval = null;
+                autoSolveBtn.textContent = 'Auto Solve';
+            }
+            
+            // Disable buttons
+            nextStepBtn.disabled = true;
+            autoSolveBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            // Reset global variables
+            treeNodes = [];
+            treeEdges = [];
+            solutions = [];
+            steps = [];
+            currentStep = 0;
+        }
+        
+        // Handle window resize with debounce
+        let resizeTimeout;
+        function handleResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (treeNodes.length > 0) {
+                    updateTreeSVG();
+                }
+            }, 200);
+        }
+        
+        // Event listeners
+        solveBtn.addEventListener('click', initialize);
+        nextStepBtn.addEventListener('click', nextStep);
+        autoSolveBtn.addEventListener('click', toggleAutoSolve);
+        resetBtn.addEventListener('click', resetSimulation);
+        window.addEventListener('resize', handleResize);
+    </script>
+</body>
+</html>
